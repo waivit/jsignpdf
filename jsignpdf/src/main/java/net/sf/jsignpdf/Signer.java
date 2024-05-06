@@ -38,6 +38,8 @@ import static net.sf.jsignpdf.Constants.LOGGER;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.security.Provider;
 import java.security.Security;
 import java.util.ArrayList;
@@ -89,7 +91,7 @@ public class Signer {
      */
     public static void main(String[] args) {
         SignerOptionsFromCmdLine tmpOpts = null;
-
+        LOGGER.log(Level.WARNING, "Test logger");
         if (args != null && args.length > 0) {
             tmpOpts = new SignerOptionsFromCmdLine();
             parseCommandLine(args, tmpOpts);

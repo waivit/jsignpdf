@@ -244,6 +244,7 @@ public class SignerLogic implements Runnable {
             }
 
             final PdfSignatureAppearance sap = stp.getSignatureAppearance();
+            LOGGER.log(Level.WARNING, "Test logger on create SAP");
             sap.setCrypto(key, chain, null, PdfSignatureAppearance.WINCER_SIGNED);
             final String reason = options.getReason();
             if (StringUtils.isNotEmpty(reason)) {
