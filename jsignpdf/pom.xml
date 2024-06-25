@@ -104,5 +104,11 @@
             <groupId>com.github.kwart.jsign</groupId>
             <artifactId>jsign-pkcs11</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>net.imagej</groupId>
+            <artifactId>ij</artifactId>
+            <version>1.51h</version>
+        </dependency>
     </dependencies>
 </project>

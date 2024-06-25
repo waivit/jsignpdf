@@ -38,8 +38,12 @@ import static net.sf.jsignpdf.Constants.L2TEXT_PLACEHOLDER_CERTIFICATE;
 import static net.sf.jsignpdf.Constants.RES;
 import static net.sf.jsignpdf.Constants.LOGGER;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.Proxy;
 import java.security.MessageDigest;
@@ -53,6 +57,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+
+import javax.imageio.ImageIO;
 
 import net.sf.jsignpdf.crl.CRLInfo;
 import net.sf.jsignpdf.extcsp.CloudFoxy;
@@ -95,6 +101,7 @@ import com.lowagie.text.pdf.TSAClientBouncyCastle;
 public class SignerLogic implements Runnable {
 
     private final BasicSignerOptions options;
+    private boolean IsStamperDone;
 
     /**
      * Constructor with all necessary parameters.
@@ -214,7 +221,8 @@ public class SignerLogic implements Runnable {
             }
             if (options.isAdvanced() && options.getPdfEncryption() != PDFEncryption.NONE) {
                 LOGGER.info(RES.get("console.setEncryption"));
-                final int tmpRight = options.getRightPrinting().getRight() | (options.isRightCopy() ? PdfWriter.ALLOW_COPY : 0)
+                final int tmpRight = options.getRightPrinting().getRight()
+                        | (options.isRightCopy() ? PdfWriter.ALLOW_COPY : 0)
                         | (options.isRightAssembly() ? PdfWriter.ALLOW_ASSEMBLY : 0)
                         | (options.isRightFillIn() ? PdfWriter.ALLOW_FILL_IN : 0)
                         | (options.isRightScreanReaders() ? PdfWriter.ALLOW_SCREENREADERS : 0)
@@ -225,17 +233,20 @@ public class SignerLogic implements Runnable {
                         stp.setEncryption(true, options.getPdfUserPwdStr(), options.getPdfOwnerPwdStrX(), tmpRight);
                         break;
                     case CERTIFICATE:
-                        final X509Certificate encCert = KeyStoreUtils.loadCertificate(options.getPdfEncryptionCertFile());
+                        final X509Certificate encCert = KeyStoreUtils
+                                .loadCertificate(options.getPdfEncryptionCertFile());
                         if (encCert == null) {
                             LOGGER.severe(RES.get("console.pdfEncError.wrongCertificateFile",
                                     StringUtils.defaultString(options.getPdfEncryptionCertFile())));
                             return false;
                         }
                         if (!KeyStoreUtils.isEncryptionSupported(encCert)) {
-                            LOGGER.severe(RES.get("console.pdfEncError.cantUseCertificate", encCert.getSubjectDN().getName()));
+                            LOGGER.severe(RES.get("console.pdfEncError.cantUseCertificate",
+                                    encCert.getSubjectDN().getName()));
                             return false;
                         }
-                        stp.setEncryption(new Certificate[] { encCert }, new int[] { tmpRight }, PdfWriter.ENCRYPTION_AES_128);
+                        stp.setEncryption(new Certificate[] { encCert }, new int[] { tmpRight },
+                                PdfWriter.ENCRYPTION_AES_128);
                         break;
                     default:
                         LOGGER.severe(RES.get("console.unsupportedEncryptionType"));
@@ -270,7 +281,18 @@ public class SignerLogic implements Runnable {
                 LOGGER.info(RES.get("console.setAcro6Layers", Boolean.toString(options.isAcro6Layers())));
                 sap.setAcro6Layers(options.isAcro6Layers());
 
-                final String tmpImgPath = options.getImgPath();
+                String tmpImgPath = options.getImgPath();
+                if (tmpImgPath == "Stamper") {
+                    try {
+                        IsStamperDone = CreateStamperImage("กรมเจ้าเท่ห์");
+
+                    } catch (Exception e) {
+                        // TODO: handle exception
+                    }
+                }
+                if (IsStamperDone) {
+                    tmpImgPath = "Stamper_output.png";
+                }
                 if (tmpImgPath != null) {
                     LOGGER.info(RES.get("console.createImage", tmpImgPath));
                     final Image img = Image.getInstance(tmpImgPath);
@@ -292,7 +314,8 @@ public class SignerLogic implements Runnable {
                     signer = options.getSignerName();
                 }
                 final String certificate = PdfPKCS7.getSubjectFields((X509Certificate) chain[0]).toString();
-                final String timestamp = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z").format(sap.getSignDate().getTime());
+                final String timestamp = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss z")
+                        .format(sap.getSignDate().getTime());
                 if (options.getL2Text() != null) {
                     final Map<String, String> replacements = new HashMap<String, String>();
                     replacements.put(L2TEXT_PLACEHOLDER_SIGNER, StringUtils.defaultString(signer));
@@ -362,7 +385,8 @@ public class SignerLogic implements Runnable {
             sap.preClose(exc);
 
             String provider = PKCS11Utils.getProviderNameForKeystoreType(options.getKsType());
-            PdfPKCS7 sgn = new PdfPKCS7(key, chain, crlInfo.getCrls(), hashAlgorithm.getAlgorithmName(), provider, false);
+            PdfPKCS7 sgn = new PdfPKCS7(key, chain, crlInfo.getCrls(), hashAlgorithm.getAlgorithmName(), provider,
+                    false);
             InputStream data = sap.getRangeStream();
             final MessageDigest messageDigest = MessageDigest.getInstance(hashAlgorithm.getAlgorithmName());
             byte buf[] = new byte[8192];
@@ -407,7 +431,8 @@ public class SignerLogic implements Runnable {
             if (options.isTimestampX() && !StringUtils.isEmpty(options.getTsaUrl())) {
                 LOGGER.info(RES.get("console.creatingTsaClient"));
                 if (options.getTsaServerAuthn() == ServerAuthentication.PASSWORD) {
-                    tsc = new TSAClientBouncyCastle(options.getTsaUrl(), StringUtils.defaultString(options.getTsaUser()),
+                    tsc = new TSAClientBouncyCastle(options.getTsaUrl(),
+                            StringUtils.defaultString(options.getTsaUser()),
                             StringUtils.defaultString(options.getTsaPasswd()));
                 } else {
                     tsc = new TSAClientBouncyCastle(options.getTsaUrl());
@@ -460,9 +485,60 @@ public class SignerLogic implements Runnable {
     }
 
     /**
+     * Create stamper image
+     *
+     * @return true when create a stamper image is finished succesfully, false
+     *         otherwise
+     * @throws IOException
+     */
+    private boolean CreateStamperImage(String Overlaytext) throws IOException {
+
+        String L1 = Overlaytext;
+        String L2 = Overlaytext;
+        String L3 = Overlaytext;
+        String L4 = Overlaytext;
+        int L1PositionX = 0;
+        if (L1.length() > 30) {
+            L1PositionX = 40;
+
+        } else if (L1.length() > 25) {
+            L1PositionX = 90;
+        } else if (L1.length() > 20) {
+            L1PositionX = 150;
+        } else if (L1.length() > 15) {
+            L1PositionX = 220;
+        } else if (L1.length() > 10) {
+            L1PositionX = 270;
+        } else {
+            L1PositionX = 300;
+        }
+
+        try {
+            final BufferedImage image = ImageIO.read(new File("Stamper.png"));
+            Graphics g = image.getGraphics();
+            g.setFont(new java.awt.Font("CordiaUPC", 1, 60));
+            g.setColor(new Color(100));
+            g.drawString(L1, L1PositionX, 100);
+            g.drawString(L2, 190, 185);
+            g.drawString("เลขที่รับ....................................................", 40, 190);
+            g.drawString(L3, 190, 275);
+            g.drawString("วัน.............................................................", 40, 280);
+            g.drawString(L4, 190, 345);
+            g.drawString("เวลา..........................................................", 40, 350);
+            g.dispose();
+
+            ImageIO.write(image, "png", new File("Stamper_output.png"));
+            return true;
+        } catch (IOException e) {
+            LOGGER.info(RES.get("console.validatingFiles"));
+            return false;
+        }
+    }
+
+    /**
      * Validates if input and output files are valid for signing.
      *
-     * @param inFile input file
+     * @param inFile  input file
      * @param outFile output file
      * @return true if valid, false otherwise
      */
