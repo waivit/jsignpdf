@@ -305,6 +305,9 @@ public class Constants {
     public static final String ARG_OSUFFIX = "os";
     public static final String ARG_OSUFFIX_LONG = "out-suffix";
 
+    public static final String ARG_STMPUFFIX = "stamp";
+    public static final String ARG_STMPUFFIX_LONG = "stamper";
+
     public static final String ARG_SIGNER_NAME = "sn";
     public static final String ARG_SIGNER_NAME_LONG = "signer-name";
 

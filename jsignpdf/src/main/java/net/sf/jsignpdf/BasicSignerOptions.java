@@ -61,6 +61,7 @@ public class BasicSignerOptions {
     private String propertiesFilePath;
 
     private String ksType;
+    private String StamperTxtOverlay;
     private String ksFile;
     private char[] ksPasswd;
     private String keyAlias;
@@ -717,6 +718,14 @@ public class BasicSignerOptions {
         this.page = aPage;
     }
 
+    public String getStamperTxtOverlay() {
+        return StamperTxtOverlay;
+    }
+
+    public void setStamperTxtOverlay(final String StamperTxtOverlay) {
+        this.StamperTxtOverlay= StamperTxtOverlay;
+    }
+
     public float getPositionLLX() {
         return positionLLX;
     }
@@ -724,6 +733,7 @@ public class BasicSignerOptions {
     public void setPositionLLX(final float positionLLX) {
         this.positionLLX = positionLLX;
     }
+
 
     public float getPositionLLY() {
         return positionLLY;

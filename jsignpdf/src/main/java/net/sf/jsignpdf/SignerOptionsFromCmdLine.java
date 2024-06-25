@@ -141,6 +141,8 @@ public class SignerOptionsFromCmdLine extends BasicSignerOptions {
             setOutPrefix(line.getOptionValue(ARG_OPREFIX));
         if (line.hasOption(ARG_OSUFFIX))
             setOutSuffix(line.getOptionValue(ARG_OSUFFIX));
+        if (line.hasOption(ARG_STMPUFFIX))
+            setStamperTxtOverlay(line.getOptionValue(ARG_STMPUFFIX));
         if (line.hasOption(ARG_SIGNER_NAME))
             setSignerName(line.getOptionValue(ARG_SIGNER_NAME));
         if (line.hasOption(ARG_REASON))
@@ -432,6 +434,11 @@ public class SignerOptionsFromCmdLine extends BasicSignerOptions {
                 .withLongOpt(ARG_PROXY_PORT_LONG).hasArg().withType(Number.class).withArgName("port").create());
 
         OPTS.addOption(OptionBuilder.withLongOpt(ARG_GUI).withDescription(RES.get("hlp.gui")).create());
+
+
+        
+        OPTS.addOption(OptionBuilder.withDescription(RES.get("hlp.stamp")).hasArg()
+                .withArgName("stamp").create(ARG_STMPUFFIX));
     }
 
     /**

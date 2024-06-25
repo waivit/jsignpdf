@@ -46,6 +46,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Proxy;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
@@ -282,16 +284,22 @@ public class SignerLogic implements Runnable {
                 sap.setAcro6Layers(options.isAcro6Layers());
 
                 String tmpImgPath = options.getImgPath();
-                if (tmpImgPath == "Stamper") {
+                Path pathToKeepStamperFile = Paths.get(tmpImgPath);
+                String StamperPath = pathToKeepStamperFile.getParent().toString();
+                // LOGGER.info(null);
+
+                Path finalPath = Paths.get(StamperPath, "Stamper_output.png");
+                if (tmpImgPath.contains("Stamper.png")) {
                     try {
-                        IsStamperDone = CreateStamperImage("กรมเจ้าเท่ห์");
+                        String StamperTxtOverlay = options.getStamperTxtOverlay();
+                        IsStamperDone = CreateStamperImage(StamperTxtOverlay, finalPath.toAbsolutePath().toString());
 
                     } catch (Exception e) {
                         // TODO: handle exception
                     }
                 }
                 if (IsStamperDone) {
-                    tmpImgPath = "Stamper_output.png";
+                    tmpImgPath = finalPath.toAbsolutePath().toString();
                 }
                 if (tmpImgPath != null) {
                     LOGGER.info(RES.get("console.createImage", tmpImgPath));
@@ -491,12 +499,20 @@ public class SignerLogic implements Runnable {
      *         otherwise
      * @throws IOException
      */
-    private boolean CreateStamperImage(String Overlaytext) throws IOException {
+    private boolean CreateStamperImage(String StamperTxtOverlay, String outputpath) throws IOException {
 
-        String L1 = Overlaytext;
-        String L2 = Overlaytext;
-        String L3 = Overlaytext;
-        String L4 = Overlaytext;
+        String[] tmp = StamperTxtOverlay.split(",");
+        String L1 = "";
+        String L2 = "";
+        String L3 = "";
+        String L4 = "";
+        if (tmp.length == 4) {
+            L1 = tmp[0];
+            L2 = tmp[1];
+            L3 = tmp[2];
+            L4 = tmp[3];
+        }
+
         int L1PositionX = 0;
         if (L1.length() > 30) {
             L1PositionX = 40;
@@ -514,7 +530,7 @@ public class SignerLogic implements Runnable {
         }
 
         try {
-            final BufferedImage image = ImageIO.read(new File("Stamper.png"));
+            final BufferedImage image = ImageIO.read(new File("E:\\DigiSign_Project\\git-repo\\Data\\Stamper.png"));
             Graphics g = image.getGraphics();
             g.setFont(new java.awt.Font("CordiaUPC", 1, 60));
             g.setColor(new Color(100));
@@ -527,10 +543,10 @@ public class SignerLogic implements Runnable {
             g.drawString("เวลา..........................................................", 40, 350);
             g.dispose();
 
-            ImageIO.write(image, "png", new File("Stamper_output.png"));
+            ImageIO.write(image, "png", new File(outputpath));
             return true;
         } catch (IOException e) {
-            LOGGER.info(RES.get("console.validatingFiles"));
+            LOGGER.info(RES.get("console.CreateStamperImage failed"));
             return false;
         }
     }

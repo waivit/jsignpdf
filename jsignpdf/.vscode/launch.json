@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "JavaVersion",
+            "request": "launch",
+            "mainClass": "net.sf.jsignpdf.JavaVersion",
+            "projectName": "jsignpdf"
+        },
+        {
+            "type": "java",
+            "name": "Signer",
+            "request": "launch",
+            "mainClass": "net.sf.jsignpdf.Signer",
+            "args": "E:/DigiSign_Project/git-repo/Data/data1.pdf -a --img-path \"E:\\DigiSign_Project\\git-repo\\Data\\Stamper.png\" -kst PKCS12 -ksf E:\\DigiSign_Project\\git-repo\\Data\\ta.p12 -ksp password -kp password -ka ta -V --render-mode GRAPHIC_AND_DESCRIPTION --l2-text \"\" -pg 1 -llx 92 -lly 231 -urx 228 -ury 275 -stamp aa,bb,cc,dd",
+            "projectName": "jsignpdf"
+        },
+        {
+            "type": "java",
+            "name": "UncompressPdf",
+            "request": "launch",
+            "mainClass": "net.sf.jsignpdf.UncompressPdf",
+            "projectName": "jsignpdf"
+        }
+    ]
+}
